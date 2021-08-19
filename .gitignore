@@ -1,0 +1,4 @@
+## Patterns to be ignored by Git.
+
+# FIles built by Cargo
+target/

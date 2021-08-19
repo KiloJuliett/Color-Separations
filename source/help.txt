@@ -1,0 +1,40 @@
+[7m Color Separations [0m
+
+  Generate 3D LUTs for performing arbitrary color separations.
+
+[7m Usage [0m
+
+  [95mseparations [93m-p[0m [96m<Profile>[0m [93m-o[0m [96m<File>[0m ([93m-c[0m [96m<R> <G> <B>[0m)+ [93m[Options][0m
+  [95mseparations [93m--version[0m | [93m--help[0m
+
+[7m Options [0m
+
+  [93m-c[0m, [93m--color[0m [96m<R> <G> <B>[0m
+                Mandatory; specifies a primary color by its component values,
+                which must be numeric. This option can be specified multiple
+                times for multiple primary colors.
+  [93m-h[0m, [93m--help[0m
+                Displays this dialog.
+  [93m-l[0m, [93m--limit[0m [96m<Limit>[0m
+                Optional; specifies an ink limit, which must be a non-negative
+                number. By default, no ink limit will be respected.
+  [93m-o[0m, [93m--output[0m [96m<File>[0m
+                Mandatory; specifies the location for the output 3D LUT file.
+  [93m-p[0m, [93m--profile[0m [96m<Name | File>[0m
+                Mandatory; specifies the ICC color profile to use, either as a
+                name or a file. The supported ICC profile names are:
+                  - AdobeRGB1998
+                  - sRGB
+                  - Rec709
+  [93m-s[0m, [93m--size[0m [96m<Size>[0m
+                Optional; specifies the output 3D LUT size, which must be an
+                integer greater than or equal to 2. By default, the output 3D
+                LUT size is 64.
+  [93m-t[0m, [93m--target[0m [96m<Target>[0m
+                Optional; specifies the target number of secondary colors to
+                generate, which must be a positive integer. The actual number of
+                generated secondary colors will be greater or equal to this
+                target (unless an ink limit has been imposed). By default, the
+                target number is 100 000 000.
+  [93m-v[0m, [93m--version[0m
+                Displays version information.

@@ -1,0 +1,26 @@
+[package]
+name = "ColorSeparations"
+version = "0.1.0"
+authors = ["kjchu09"]
+edition = "2018"
+
+[[bin]]
+name = "separations"
+path = "source/separations.rs"
+
+[dependencies]
+lazy_static = "1.4"
+lcms2 = "5.2"
+maplit = "1.0"
+rstar = "0.8"
+unicase = "2.6"
+
+[dev-dependencies]
+criterion = "0.3"
+serial_test = "0.4"
+test-case = "1.0"
+
+[[bench]]
+name = "bench-separations"
+path = "benches/bench-separations.rs"
+harness = false
