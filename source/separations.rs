@@ -1,5 +1,3 @@
-// #![feature(if_let_guard)]
-
 use lazy_static::lazy_static;
 use lcms2::ColorSpaceSignature;
 use lcms2::Intent;
@@ -17,6 +15,9 @@ use std::io::BufWriter;
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::exit;
+use std::sync::Arc;
+use std::sync::Mutex;
+use threadpool::ThreadPool;
 use unicase::UniCase;
 
 /// The default output 3D LUT size. A value of 64 is typical in professional
@@ -297,7 +298,8 @@ fn main() {
 
             total += fraction;
             
-            // Current secondary color violates the ink limit.
+            // Current secondary color violates the ink limit. Immediately
+            // abandon this particular mixture of secondaries.
             if total > inklimit {
                 continue 'secondaries;
             }
@@ -324,25 +326,60 @@ fn main() {
     // Populate the RTree.
     let rtree = RTree::bulk_load(secondaries);
 
-    // Generate 3D LUTs.
-    // TODO Multithreading would be real nice here.
-    for color_lut in colors_lut {
-        let data_secondary = rtree.nearest_neighbor(&color_lut).unwrap();
+    let count_threads = num_cpus::get();
+    let threadpool = ThreadPool::new(count_threads);
 
-        outputs[0].1.push(data_secondary.position().to_owned());
+    let arc_results = Arc::new(Mutex::from(vec![Vec::new(); count_threads])); // TODO pointless initialized memory
+    let arc_primaries = Arc::new(primaries);
+    let arc_colors_lut = Arc::new(colors_lut);
+    let arc_rtree = Arc::new(rtree);
 
-        for index_primary in 0..primaries.len() {
-            let primary = primaries[index_primary];
-            let fraction = data_secondary.data[index_primary];
+    for index_thread in 0..count_threads {
+        let results = arc_results.clone();
+        let primaries = arc_primaries.clone();
+        let colors_lut = arc_colors_lut.clone();
+        let rtree = arc_rtree.clone();
 
-            let mut color = [0.0; 3];
+        threadpool.execute(move || {
+            let start = index_thread * colors_lut.len() / count_threads;
+            let end = (index_thread + 1) * colors_lut.len() / count_threads;
 
-            for index_component in 0..3 {
-                color[index_component] = fraction * primary[index_component] + (1.0 - fraction) * white[index_component];
+            let mut result = vec![Vec::with_capacity(end - start); 1 + 2 * primaries.len()];
+
+            // Generate 3D LUTs for this thread's designated allocation.
+            for index in start..end {
+                let color_lut = colors_lut[index];
+
+                let data_secondary = rtree.nearest_neighbor(&color_lut).unwrap();
+
+                result[0].push(data_secondary.position().to_owned());
+
+                for index_primary in 0..primaries.len() {
+                    let primary = primaries[index_primary];
+                    let fraction = data_secondary.data[index_primary];
+
+                    let mut color = [0.0; 3];
+
+                    for index_component in 0..3 {
+                        color[index_component] = fraction * primary[index_component] + (1.0 - fraction) * white[index_component];
+                    }
+
+                    result[2 * index_primary + 1].push(color);
+                    result[2 * index_primary + 2].push([fraction, fraction, fraction]);
+                }
             }
 
-            outputs[2 * index_primary + 1].1.push(color);
-            outputs[2 * index_primary + 2].1.push([fraction, fraction, fraction]);
+            let mut results = results.lock().unwrap();
+            results[index_thread] = result;
+        });
+    }
+
+    threadpool.join();
+
+    // Combine individual thread results into complete 3D LUTs.
+    for result in Arc::try_unwrap(arc_results).unwrap().into_inner().unwrap() {
+        for (index, mut result_output) in result.into_iter().enumerate() {
+            outputs[index].1.append(&mut result_output);
         }
     }
 

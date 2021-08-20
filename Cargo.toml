@@ -12,7 +12,9 @@ path = "source/separations.rs"
 lazy_static = "1.4"
 lcms2 = "5.2"
 maplit = "1.0"
+num_cpus = "1.13"
 rstar = "0.8"
+threadpool = "1.8"
 unicase = "2.6"
 
 [dev-dependencies]
