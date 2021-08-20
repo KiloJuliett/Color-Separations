@@ -299,7 +299,7 @@ fn main() {
             total += fraction;
             
             // Current secondary color violates the ink limit. Immediately
-            // abandon this particular mixture of secondaries.
+            // abandon this particular mixture of primaries.
             if total > inklimit {
                 continue 'secondaries;
             }
