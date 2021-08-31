@@ -1,3 +1,5 @@
+mod vector;
+
 use lazy_static::lazy_static;
 use lcms2::ColorSpaceSignature;
 use lcms2::Intent;
@@ -19,6 +21,8 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use threadpool::ThreadPool;
 use unicase::UniCase;
+
+use vector::Vector3;
 
 /// The default output 3D LUT size. A value of 64 is typical in professional
 /// settings.
@@ -132,11 +136,11 @@ fn main() {
                     })
                 };
 
-                primaries.push([
+                primaries.push(Vector3([
                     parse_component(argument_next()),
                     parse_component(argument_next()),
                     parse_component(argument_next())
-                ]);
+                ]));
             },
 
             // 3D LUT size
@@ -187,16 +191,11 @@ fn main() {
     if primaries.is_empty() {
         errorout("No primary colors were specified. Use \x1B[93m--color\x1B[0m to specify a primary color.");
     }
-
     
-
     // TODO what should resolution be?
-
     let count_colors_lut = size.pow(3);
     let resolution = (target as f64).powf(1.0 / primaries.len() as f64).ceil() as usize;
     let count_secondaries = resolution.pow(primaries.len() as u32);
-
-
 
     // Prepare profile transformations.
     let profile_xyz = Profile::new_xyz();
@@ -216,7 +215,7 @@ fn main() {
     ).unwrap();
     
     // Returns a new output record.
-    let new_output = |path: &PathBuf| -> (File, Vec<[f32; 3]>) {
+    let new_output = |path: &PathBuf| -> (File, Vec<Vector3>) {
         let file = File::create(path).unwrap_or_else(|error|
             errorout(format!("Could not create output 3D LUT file \x1B[96m{}\x1B[0m: {}.", path.display(), error))
         );
@@ -251,10 +250,8 @@ fn main() {
 
     // TODO get component type, is 255 really it? Maybe someone wants to specify
     // colors from a range of 0-1?
-    for index in 0..primaries.len() {
-        for index_channel in 0..primaries[index].len() {
-            primaries[index][index_channel] /= 255.0;
-        }
+    for primary in primaries.iter_mut() {
+        *primary /= 255.0;
     }
     
     // Generate the origin 3D LUT colors in their correct order.
@@ -268,12 +265,12 @@ fn main() {
             for index_red in 0..size {
                 let component_red = (index_red % size) as f32 / (size - 1) as f32;
 
-                colors_lut.push([component_red, component_green, component_blue]);
+                colors_lut.push(Vector3([component_red, component_green, component_blue]));
             }
         }
     }
 
-    let mut white = vec![[1.0, 1.0, 1.0]];
+    let mut white = vec![Vector3([1.0, 1.0, 1.0])];
 
     // Move all of the colors into XYZ space.
     // TODO probably not worth multithreading this but maybe?
@@ -304,16 +301,7 @@ fn main() {
                 continue 'secondaries;
             }
 
-            // Basically the equivalent of:
-            //     secondary *= (fraction * primaries[index_primary] + (1.0 - fraction) * white) / white;
-            // except in a universe where I was too lazy to implement vector
-            // addition, scalar multiplication, and element-wise multiplication.
-            for index_component in 0..3 {
-                secondary[index_component] *= (
-                    fraction * primaries[index_primary][index_component]
-                    + (1.0 - fraction) * white[index_component]
-                ) / white[index_component];
-            }
+            secondary *= (fraction * primaries[index_primary] + (1.0 - fraction) * white) / white;
 
             components.push(fraction);
 
@@ -358,14 +346,10 @@ fn main() {
                     let primary = primaries[index_primary];
                     let fraction = data_secondary.data[index_primary];
 
-                    let mut color = [0.0; 3];
-
-                    for index_component in 0..3 {
-                        color[index_component] = fraction * primary[index_component] + (1.0 - fraction) * white[index_component];
-                    }
+                    let color = fraction * primary + (1.0 - fraction) * white;
 
                     result[2 * index_primary + 1].push(color);
-                    result[2 * index_primary + 2].push([fraction, fraction, fraction]);
+                    result[2 * index_primary + 2].push(Vector3([fraction, fraction, fraction]));
                 }
             }
 
