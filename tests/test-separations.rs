@@ -36,6 +36,7 @@ pub fn teardown() {
 /// the `teardown` function will always run after the test runs, regardless of
 /// the result of the test. Tests run by this function will always occur in
 /// sequence, even if you forget to run `cargo test` with `--test-threads=1`.
+#[allow(clippy::unused_unit)]
 pub fn run(test: impl FnOnce() -> () + UnwindSafe) {
     let _lock = LOCK.lock().unwrap_or_else(|error| error.into_inner());
 
@@ -48,6 +49,7 @@ pub fn run(test: impl FnOnce() -> () + UnwindSafe) {
 
 /// Tests that the given argument configurations execute successfully. But
 /// without actually doing any serious computation.
+#[allow(clippy::unused_unit)]
 #[test_case("--version")]
 #[test_case("--help")]
 #[test_case("-v")]
@@ -60,7 +62,7 @@ pub fn test_success(arguments: &str) {
     run(|| {
         let mut process = Command::new("cargo");
         process.args(&["run", "--"]);
-        process.args(arguments.split(" "));
+        process.args(arguments.split(' '));
 
         let output = process.output().unwrap();
 
@@ -69,6 +71,7 @@ pub fn test_success(arguments: &str) {
 }
 
 /// Tests that the given invalid arguments are correctly recognized as invalid.
+#[allow(clippy::unused_unit)]
 #[test_case(""                                                           ; "empty")]
 #[test_case("-o tests/output.cube -c 1 2 3"                              ; "profile_missing")]
 #[test_case("-p sRGB -c 1 2 3"                                           ; "output_missing")]
@@ -93,7 +96,7 @@ pub fn test_bad_arguments(arguments: &str) {
     run(|| {
         let mut process = Command::new("cargo");
         process.args(&["run", "--"]);
-        process.args(arguments.split(" "));
+        process.args(arguments.split(' '));
 
         let output = process.output().unwrap();
 
@@ -103,6 +106,7 @@ pub fn test_bad_arguments(arguments: &str) {
 
 /// Tests that the program's output (with the given inputs) is identical, within
 /// a given tolerance, to a given reference output.
+#[allow(clippy::unused_unit)]
 #[test_case(
     // Reference generated with 
     // `-p sRGB -o tests/rebeccapurple.cube -c 102 51 153 -s 16` with a
@@ -138,7 +142,7 @@ pub fn test_output(arguments: &str, comparisons: Vec<(&str, &str)>, tolerance: f
     run(|| {
         let mut process = Command::new("cargo");
         process.args(&["run", "--", "-o", "tests/output.cube"]);
-        process.args(arguments.split(" "));
+        process.args(arguments.split(' '));
 
         assert!(process.output().unwrap().status.success());
 
@@ -146,13 +150,13 @@ pub fn test_output(arguments: &str, comparisons: Vec<(&str, &str)>, tolerance: f
             /// Parses the given path as a 3D LUT.
             fn parse_lut(path: impl AsRef<Path>) -> Vec<[f32; 3]> {
                 eprintln!("{}", path.as_ref().display());
-                let read = BufReader::new(File::open(&path).expect(format!("{}", path.as_ref().display()).as_ref()));
+                let read = BufReader::new(File::open(&path).unwrap());
 
-                let mut colors = Vec::with_capacity((16 as usize).pow(3));
+                let mut colors = Vec::with_capacity(16_usize.pow(3));
 
                 for (index, line) in read.lines().map(Result::unwrap).enumerate() {
                     if index >= 3 {
-                        let components = line.split(" ");
+                        let components = line.split(' ');
                         let components = components.map(str::parse);
                         let components = components.map(Result::unwrap);
                         let components = components.collect::<Vec<f32>>();
