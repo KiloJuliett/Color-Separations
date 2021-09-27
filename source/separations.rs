@@ -7,7 +7,7 @@ use lcms2::PixelFormat;
 use lcms2::Profile;
 use lcms2::Transform;
 use maplit::hashmap;
-use rstar::primitives::PointWithData;
+use rstar::primitives::GeomWithData;
 use rstar::RTree;
 use std::collections::HashMap;
 use std::env::args;
@@ -286,11 +286,11 @@ fn main() {
     // multithreading, so I'm not gonna bother.
     let mut secondaries = Vec::with_capacity(count_secondaries);
     'secondaries: for mut number in 0..count_secondaries {
-        let mut secondary = white.clone();
+        let mut secondary = white;
         let mut components = Vec::with_capacity(primaries.len());
         let mut total = 0.0;
 
-        for index_primary in 0..primaries.len() {
+        for primary in primaries.iter() {
             let fraction = (number % resolution) as f32 / (resolution - 1) as f32;
 
             total += fraction;
@@ -301,14 +301,14 @@ fn main() {
                 continue 'secondaries;
             }
 
-            secondary *= (fraction * primaries[index_primary] + (1.0 - fraction) * white) / white;
+            secondary *= (fraction * *primary + (1.0 - fraction) * white) / white;
 
             components.push(fraction);
 
             number /= resolution;
         }
 
-        secondaries.push(PointWithData::new(components, secondary));
+        secondaries.push(GeomWithData::new(secondary, (secondary, components)));
     }
 
     // Populate the RTree.
@@ -340,11 +340,13 @@ fn main() {
 
                 let data_secondary = rtree.nearest_neighbor(&color_lut).unwrap();
 
-                result[0].push(data_secondary.position().to_owned());
+                let (secondary, components) = &data_secondary.data;
+
+                result[0].push(*secondary);
 
                 for index_primary in 0..primaries.len() {
                     let primary = primaries[index_primary];
-                    let fraction = data_secondary.data[index_primary];
+                    let fraction = components[index_primary];
 
                     let color = fraction * primary + (1.0 - fraction) * white;
 

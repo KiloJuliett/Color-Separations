@@ -13,13 +13,13 @@ lazy_static = "1.4"
 lcms2 = "5.2"
 maplit = "1.0"
 num_cpus = "1.13"
-rstar = "0.8"
+rstar = "0.9"
 threadpool = "1.8"
 unicase = "2.6"
 
 [dev-dependencies]
 criterion = "0.3"
-serial_test = "0.4"
+serial_test = "0.5"
 test-case = "1.0"
 
 [[bench]]

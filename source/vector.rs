@@ -61,7 +61,7 @@ impl Add for Vector3 {
     type Output = Self;
 
     fn add(self, addend: Self) -> Self {
-        let mut augend = self.clone();
+        let mut augend = self;
         augend += addend;
         augend
     }
@@ -81,7 +81,7 @@ impl Sub for Vector3 {
     type Output = Self;
 
     fn sub(self, addend: Self) -> Self {
-        let mut augend = self.clone();
+        let mut augend = self;
         augend -= addend;
         augend
     }
@@ -103,7 +103,7 @@ impl Mul<f32> for Vector3 {
     type Output = Self;
 
     fn mul(self, multiplicand: f32) -> Self {
-        let mut multiplier = self.clone();
+        let mut multiplier = self;
         multiplier *= multiplicand;
         multiplier
     }
@@ -114,7 +114,7 @@ impl Mul<Vector3> for f32 {
     type Output = Vector3;
 
     fn mul(self, multiplicand: Vector3) -> Vector3 {
-        let mut multiplicand = multiplicand.clone();
+        let mut multiplicand = multiplicand;
         multiplicand *= self;
         multiplicand
     }
@@ -134,7 +134,7 @@ impl Div<f32> for Vector3 {
     type Output = Self;
 
     fn div(self, denominator: f32) -> Self {
-        let mut numerator = self.clone();
+        let mut numerator = self;
         numerator /= denominator;
         numerator
     }
@@ -156,7 +156,7 @@ impl Mul for Vector3 {
     type Output = Self;
 
     fn mul(self, multiplicand: Self) -> Self {
-        let mut multiplier = self.clone();
+        let mut multiplier = self;
         multiplier *= multiplicand;
         multiplier
     }
@@ -176,7 +176,7 @@ impl Div for Vector3 {
     type Output = Self;
 
     fn div(self, denominator: Self) -> Self {
-        let mut numerator = self.clone();
+        let mut numerator = self;
         numerator /= denominator;
         numerator
     }
@@ -211,6 +211,7 @@ mod tests {
 
     use test_case::test_case;
 
+    #[allow(clippy::unused_unit)]
     #[test_case(
         Vector3([1.0, -1.0, 1.0]),
         -Vector3([-1.0, 1.0, -1.0])
