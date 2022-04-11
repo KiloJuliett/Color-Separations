@@ -386,24 +386,10 @@ fn main() {
             writeln!(output, "DOMAIN_MAX 1 1 1")?;
     
             for color in colors_output {
-                /// Clamps the given value between 0 and 1. This function won't
-                /// be necessary once clamp is stabilized. Assuming it ever gets
-                /// stabilized. You'd think something as simple as that wouldn't
-                /// cause a whole lot of drama, but you'd be wrong.
-                fn clamp(value: f32) -> f32 {
-                    if value <= 0.0 {
-                        0.0
-                    } else if value > 1.0 {
-                        1.0
-                    } else {
-                        value
-                    }
-                }
-    
                 writeln!(output, "{} {} {}",
-                    clamp(color[0]),
-                    clamp(color[1]),
-                    clamp(color[2])
+                    color[0].clamp(0.0, 1.0),
+                    color[1].clamp(0.0, 1.0),
+                    color[2].clamp(0.0, 1.0)
                 )?;
             }
 

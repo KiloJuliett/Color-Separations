@@ -40,7 +40,7 @@ pub fn teardown() {
 pub fn run(test: impl FnOnce() -> () + UnwindSafe) {
     let _lock = LOCK.lock().unwrap_or_else(|error| error.into_inner());
 
-    let result = catch_unwind(|| test());
+    let result = catch_unwind(test);
 
     teardown();
 
