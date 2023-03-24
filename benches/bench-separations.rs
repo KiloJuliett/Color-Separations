@@ -18,7 +18,7 @@ pub fn bench_separations(criterion: &mut Criterion) {
 
         for _ in 0..iterations {
             let mut process = Command::new("cargo");
-            process.args(&["run", "--"]);
+            process.args(["run", "--"]);
             process.args(arguments.split(' '));
 
             let start = Instant::now();

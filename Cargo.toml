@@ -10,17 +10,17 @@ path = "source/separations.rs"
 
 [dependencies]
 lazy_static = "1.4"
-lcms2 = "5.4"
+lcms2 = "5.5"
 maplit = "1.0"
-num_cpus = "1.13"
+num_cpus = "1.15"
 rstar = "0.9"
 threadpool = "1.8"
 unicase = "2.6"
 
 [dev-dependencies]
-criterion = "0.3"
-serial_test = "0.7"
-test-case = "2.1"
+criterion = "0.4"
+serial_test = "0.10"
+test-case = "2.2"
 
 [[bench]]
 name = "bench-separations"

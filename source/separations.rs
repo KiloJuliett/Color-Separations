@@ -237,12 +237,12 @@ fn main() {
         stem_component.push(index_component.to_string());
 
         let mut path_component_main = path_output.with_file_name(&stem_component);
-        path_component_main.set_extension(&extension);
+        path_component_main.set_extension(extension);
         
         stem_component.push("m");
 
         let mut path_component_mask = path_output.with_file_name(&stem_component);
-        path_component_mask.set_extension(&extension);
+        path_component_mask.set_extension(extension);
 
         outputs.push(new_output(&path_component_main));
         outputs.push(new_output(&path_component_mask));

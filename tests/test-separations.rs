@@ -61,7 +61,7 @@ pub fn run(test: impl FnOnce() -> () + UnwindSafe) {
 pub fn test_success(arguments: &str) {
     run(|| {
         let mut process = Command::new("cargo");
-        process.args(&["run", "--"]);
+        process.args(["run", "--"]);
         process.args(arguments.split(' '));
 
         let output = process.output().unwrap();
@@ -95,7 +95,7 @@ pub fn test_success(arguments: &str) {
 pub fn test_bad_arguments(arguments: &str) {
     run(|| {
         let mut process = Command::new("cargo");
-        process.args(&["run", "--"]);
+        process.args(["run", "--"]);
         process.args(arguments.split(' '));
 
         let output = process.output().unwrap();
@@ -141,7 +141,7 @@ pub fn test_bad_arguments(arguments: &str) {
 pub fn test_output(arguments: &str, comparisons: Vec<(&str, &str)>, tolerance: f32) {
     run(|| {
         let mut process = Command::new("cargo");
-        process.args(&["run", "--", "-o", "tests/output.cube"]);
+        process.args(["run", "--", "-o", "tests/output.cube"]);
         process.args(arguments.split(' '));
 
         assert!(process.output().unwrap().status.success());
